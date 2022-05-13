@@ -21,7 +21,10 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
   const { createClient } = require("redis");
-  const redisClient = createClient({ legacyMode: true });
+  const redisClient = createClient({
+    legacyMode: true,
+  });
+  await redisClient.connect();
 
   app.use(
     session({
@@ -38,7 +41,6 @@ const main = async () => {
       resave: false,
     })
   );
-
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [HelloResolver, PostResolver, UserResolver],
