@@ -8,18 +8,44 @@ import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/posts";
 import { UserResolver } from "./resolvers/User";
+import session from "express-session";
+import connectRedis from "connect-redis";
+import { MyContext } from "./types";
+import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
   await orm.getMigrator().up();
 
   const app = express();
+
+  const RedisStore = connectRedis(session);
+  const { createClient } = require("redis");
+  const redisClient = createClient({ legacyMode: true });
+
+  app.use(
+    session({
+      name: "qid",
+      store: new RedisStore({ client: redisClient, disableTouch: true }),
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+        httpOnly: true,
+        sameSite: "lax", //  csrf
+        secure: __prod__, // cookie only works in https
+      },
+      saveUninitialized: false,
+      secret: "f412FE23shf982hqf78",
+      resave: false,
+    })
+  );
+
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: () => ({ em: orm.em }),
+    context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
+    plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app });
@@ -27,11 +53,6 @@ const main = async () => {
   app.listen(4000, () => {
     console.log("server started on localhost:4000");
   });
-
-  //   const post = orm.em.create(Post, { title: "my first post" });
-  //   await orm.em.persistAndFlush(post);
-  //   const posts = await orm.em.find(Post, {});
-  //   console.log(posts);
 };
 
 main().catch((err) => {

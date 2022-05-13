@@ -11,8 +11,6 @@ import {
   Ctx,
   ObjectType,
 } from "type-graphql";
-import { formatApolloErrors } from "apollo-server-errors";
-
 @InputType()
 class UsernamePasswordInput {
   @Field() username: string;
@@ -71,7 +69,6 @@ export class UserResolver {
       await em.persistAndFlush(user);
     } catch (err) {
       if (err.code === "ER_DUP_ENTRY") {
-        //|| err.detail.includes("already exists")) {
         return {
           errors: [
             {
@@ -89,7 +86,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
@@ -114,6 +111,8 @@ export class UserResolver {
       };
     }
 
+    req.session.userId = user.id;
+    console.log(req.session.userId);
     return { user };
   }
 }
