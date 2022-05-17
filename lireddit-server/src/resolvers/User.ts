@@ -65,7 +65,7 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: "username",
+            field: "password",
             message: "length must be greater than 2",
           },
         ],
@@ -88,6 +88,7 @@ export class UserResolver {
           ],
         };
       }
+      console.log("ERROR: " + err.message);
     }
     // store user id session
     // this will set a cookie on user
@@ -125,7 +126,6 @@ export class UserResolver {
     }
 
     req.session.userId = user.id;
-    console.log(req.session.userId);
     return { user };
   }
 }
