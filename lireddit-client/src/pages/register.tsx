@@ -1,14 +1,32 @@
 import React from "react";
+import { useMutation } from "urql";
 import { InputField } from "../components/InputField";
+import { useRegisterMutation } from "../generated/graphql";
+import { toErrorMap } from "../utils/toErrorMap";
 
 interface registerProps {}
 const Register: React.FC<registerProps> = ({}) => {
-  const login = (e: React.FormEvent<HTMLFormElement>) => {
+  const [, register] = useRegisterMutation();
+  const [errorMsg, setErrorMsg] = React.useState("");
+  const login = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const target = e.target as typeof e.target & {
-      email: { value: string };
+      username: { value: string };
       password: { value: string };
     };
-    console.log(target.email.value, target.password.value);
+    const response = await register({
+      username: target.username.value,
+      password: target.password.value,
+    });
+    if (response.data?.register.errors) {
+      const errors = response.data.register.errors;
+      setErrorMsg("");
+
+      errors.forEach(({ field, message }) => {
+        setErrorMsg(errorMsg + " " + message);
+      });
+      console.log(errorMsg);
+    }
   };
   return (
     <>
@@ -21,27 +39,10 @@ const Register: React.FC<registerProps> = ({}) => {
             onSubmit={login}
           >
             <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email-address" className="sr-only">
-                  Email address
-                </label>
-                <InputField
-                  name="email"
-                  placeholder="Email address"
-                  type="email"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <InputField
-                  name="password"
-                  placeholder="Password"
-                  type="password"
-                />
-              </div>
+              <InputField type="text" name="username" label="Username" />
+              <InputField type="password" name="password" label="Password" />
             </div>
+            <div>{errorMsg}</div>
             <div>
               <button
                 type="submit"
