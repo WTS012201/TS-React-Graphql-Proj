@@ -7,7 +7,14 @@ import { toErrorMap } from "../utils/toErrorMap";
 interface registerProps {}
 const Register: React.FC<registerProps> = ({}) => {
   const [, register] = useRegisterMutation();
-  const [errorMsg, setErrorMsg] = React.useState("");
+  const [errorMsg, setErrorMsg] = React.useState<Record<string, string> | null>(
+    null
+  );
+
+  const errorChange = () => {
+    return errorMsg;
+  };
+
   const login = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const target = e.target as typeof e.target & {
@@ -19,13 +26,10 @@ const Register: React.FC<registerProps> = ({}) => {
       password: target.password.value,
     });
     if (response.data?.register.errors) {
-      const errors = response.data.register.errors;
-      setErrorMsg("");
-
-      errors.forEach(({ field, message }) => {
-        setErrorMsg(errorMsg + " " + message);
-      });
-      console.log(errorMsg);
+      const errors = toErrorMap(response.data.register.errors);
+      setErrorMsg(errors);
+    } else {
+      setErrorMsg(null);
     }
   };
   return (
@@ -39,10 +43,19 @@ const Register: React.FC<registerProps> = ({}) => {
             onSubmit={login}
           >
             <div className="rounded-md shadow-sm -space-y-px">
-              <InputField type="text" name="username" label="Username" />
-              <InputField type="password" name="password" label="Password" />
+              <InputField
+                type="text"
+                name="username"
+                label="Username"
+                error={errorMsg}
+              />
+              <InputField
+                type="password"
+                name="password"
+                label="Password"
+                error={errorMsg}
+              />
             </div>
-            <div>{errorMsg}</div>
             <div>
               <button
                 type="submit"
