@@ -1,9 +1,11 @@
 import React from "react";
-import { useMutation } from "urql";
 import { InputField } from "../components/InputField";
 import { useRegisterMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/router";
+import { withUrqlClient } from "next-urql";
+import { createUrqlClient } from "../utils/createUrqlClient";
+
 interface registerProps {}
 const Register: React.FC<registerProps> = ({}) => {
   const [, register] = useRegisterMutation();
@@ -17,11 +19,14 @@ const Register: React.FC<registerProps> = ({}) => {
     const target = e.target as typeof e.target & {
       username: { value: string };
       password: { value: string };
+      email: { value: string };
     };
-    const response = await register({
+    const values = {
       username: target.username.value,
       password: target.password.value,
-    });
+      email: target.email.value,
+    };
+    const response = await register({ options: values });
     if (response.data?.register.errors) {
       const errors = toErrorMap(response.data.register.errors);
       seterrorMessage(errors);
@@ -48,6 +53,12 @@ const Register: React.FC<registerProps> = ({}) => {
                 error={errorMessage}
               />
               <InputField
+                type="text"
+                name="email"
+                label="Email"
+                error={errorMessage}
+              />
+              <InputField
                 type="password"
                 name="password"
                 label="Password"
@@ -69,4 +80,4 @@ const Register: React.FC<registerProps> = ({}) => {
     </>
   );
 };
-export default Register;
+export default withUrqlClient(createUrqlClient)(Register);

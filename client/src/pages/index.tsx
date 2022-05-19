@@ -1,9 +1,13 @@
 import type { NextPage } from "next";
+import { withUrqlClient } from "next-urql";
 import Head from "next/head";
-import Image from "next/image";
+import { createUrqlClient } from "../utils/createUrqlClient";
 import { NavBar } from "../components/NavBar";
+import { usePostsQuery } from "../generated/graphql";
+import { isServer } from "../utils/isServer";
 
 const Home: NextPage = () => {
+  const [{ data }] = usePostsQuery();
   return (
     <div>
       <Head>
@@ -13,8 +17,14 @@ const Home: NextPage = () => {
       </Head>
       <NavBar />
       <div>Hello world</div>
+      <br />
+      {!data ? (
+        <div>loading...</div>
+      ) : (
+        data.posts.map((p) => <div key={p.id}>{p.title}</div>)
+      )}
     </div>
   );
 };
 
-export default Home;
+export default withUrqlClient(createUrqlClient, { ssr: true })(Home);

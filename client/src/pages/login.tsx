@@ -4,6 +4,8 @@ import { InputField } from "../components/InputField";
 import { useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/router";
+import { withUrqlClient } from "next-urql";
+import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Login: React.FC<{}> = ({}) => {
   const [, login] = useLoginMutation();
@@ -15,14 +17,12 @@ const Login: React.FC<{}> = ({}) => {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const target = e.target as typeof e.target & {
-      username: { value: string };
+      usernameOrEmail: { value: string };
       password: { value: string };
     };
     const response = await login({
-      options: {
-        username: target.username.value,
-        password: target.password.value,
-      },
+      usernameOrEmail: target.usernameOrEmail.value,
+      password: target.password.value,
     });
     if (response.data?.login.errors) {
       const errors = toErrorMap(response.data.login.errors);
@@ -45,8 +45,8 @@ const Login: React.FC<{}> = ({}) => {
             <div className="rounded-md shadow-sm -space-y-px">
               <InputField
                 type="text"
-                name="username"
-                label="Username"
+                name="usernameOrEmail"
+                label="Username or Email"
                 error={errorMessage}
               />
               <InputField
@@ -71,4 +71,4 @@ const Login: React.FC<{}> = ({}) => {
     </>
   );
 };
-export default Login;
+export default withUrqlClient(createUrqlClient)(Login);

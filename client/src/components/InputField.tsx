@@ -16,7 +16,7 @@ export const InputField: React.FC<InputFieldProps> = (props) => {
   }, [props]);
   return (
     <div>
-      <label htmlFor={field.name} className="sr-only">
+      <label htmlFor={field.name} className="p">
         {field.label}
       </label>
       <input
