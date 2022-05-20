@@ -132,11 +132,13 @@ export class UserResolver {
       username: options.username,
       password: hashedPassword,
     } as User;
+
     try {
       await User.create(user).save();
     } catch (err) {
+      console.log("user: ", user);
       console.log(err.code);
-      if (err.code === "ER_DUP_ENTRY") {
+      if (err.code === "23505") {
         return {
           errors: [
             {
@@ -146,13 +148,29 @@ export class UserResolver {
           ],
         };
       }
-      console.log("ERROR: " + err.message);
     }
+
     // store user id session
     // this will set a cookie on user
     // and keep them logged in
-    req.session.userId = user.id;
-    return { user };
+
+    let userWithId = await User.findOne({
+      where: { username: options.username },
+    });
+    if (!userWithId) {
+      return {
+        errors: [
+          {
+            field: "username",
+            message: "failed to get user",
+          },
+        ],
+      };
+    }
+
+    req.session.userId = userWithId.id;
+    console.log(userWithId);
+    return { user: userWithId };
   }
 
   @Mutation(() => UserResponse)

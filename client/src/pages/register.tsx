@@ -27,6 +27,7 @@ const Register: React.FC<registerProps> = ({}) => {
       email: target.email.value,
     };
     const response = await register({ options: values });
+    console.log("here");
     if (response.data?.register.errors) {
       const errors = toErrorMap(response.data.register.errors);
       seterrorMessage(errors);
