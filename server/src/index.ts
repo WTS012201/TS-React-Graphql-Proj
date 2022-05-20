@@ -19,27 +19,19 @@ import { User } from "./entities/User";
 
 const main = async () => {
   const conn = await createConnection({
-    type: "mysql",
+    type: "postgres",
     database: "lireddit",
-    username: "root",
+    username: "admin",
     password: "",
     logging: true,
     synchronize: true,
     entities: [Post, User],
   });
-  // const orm = await MikroORM.init(microConfig);
-  // await orm.getMigrator().up();
 
   const app = express();
 
   const RedisStore = connectRedis(session);
   const redisClient = new Redis();
-
-  // const { createClient } = require("redis");
-  // const redisClient = createClient({
-  //   legacyMode: true,
-  // });
-  // await redisClient.connect();
 
   app.use(
     cors({
