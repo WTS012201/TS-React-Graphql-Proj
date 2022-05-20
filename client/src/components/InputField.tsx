@@ -2,7 +2,7 @@ import React, { useState } from "react";
 type InputFieldProps = {
   name: string;
   label: string;
-  error: Record<string, string> | null;
+  error?: Record<string, string> | null;
   type?: string;
 };
 
