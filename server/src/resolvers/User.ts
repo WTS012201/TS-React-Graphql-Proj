@@ -15,6 +15,7 @@ import { UsernamePasswordInput } from "./UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
 import { sendEmail } from "../utils/sendEmails";
 import { v4 } from "uuid";
+
 @ObjectType()
 class FieldError {
   @Field()
