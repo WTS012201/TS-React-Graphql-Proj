@@ -5,9 +5,18 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { NavBar } from "../components/NavBar";
 import { usePostsQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
+import Link from "next/link";
+import Post from "../components/Post";
+import React from "react";
 
 const Home: NextPage = () => {
-  const [{ data }] = usePostsQuery();
+  const [variables, setVariables] = React.useState({
+    limit: 33,
+    cursor: null as null | string,
+  });
+  const [{ data, fetching }] = usePostsQuery({
+    variables,
+  });
   return (
     <div>
       <Head>
@@ -16,13 +25,38 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <NavBar />
-      <div>Hello world</div>
-      <br />
-      {!data ? (
-        <div>loading...</div>
-      ) : (
-        data.posts.map((p) => <div key={p.id}>{p.title}</div>)
-      )}
+      <div className="m-auto w-1/2">
+        <div className="mt-4 flex">
+          <h1 className="text-5xl font-bold">Coolsite</h1>
+          <Link href="/create-post">
+            <a className="mr-2 ml-auto mt-auto">Create Post</a>
+          </Link>
+        </div>
+        <br />
+
+        {!data && fetching ? (
+          <div>loading...</div>
+        ) : (
+          data!.posts.posts.map((p) => {
+            return <Post {...p} />;
+          })
+        )}
+        {data && data.posts.hasMore ? (
+          <div className="text-center my-2 text-xl">
+            <button
+              onClick={() => {
+                setVariables({
+                  limit: variables.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                });
+              }}
+            >
+              load more
+            </button>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 };

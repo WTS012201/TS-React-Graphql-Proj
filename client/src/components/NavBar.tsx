@@ -44,7 +44,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
     );
   }
   return (
-    <div className="bg-amber-100 p-1 flex">
+    <div className="bg-amber-100 p-1 flex sticky top-0 z-1">
       <div className="ml-auto">
         {body ? (
           body
