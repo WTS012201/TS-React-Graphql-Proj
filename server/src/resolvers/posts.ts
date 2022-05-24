@@ -1,5 +1,4 @@
 import { Post } from "../entities/Post";
-import { Like } from "../entities/Like";
 import {
   Resolver,
   Query,
