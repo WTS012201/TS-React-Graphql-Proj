@@ -11,7 +11,7 @@ import React from "react";
 
 const Home: NextPage = () => {
   const [variables, setVariables] = React.useState({
-    limit: 33,
+    limit: 15,
     cursor: null as null | string,
   });
   const [{ data, fetching }] = usePostsQuery({

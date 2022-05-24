@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Like } from "./Like";
 import { User } from "./User";
 
 @ObjectType()
@@ -25,6 +27,7 @@ export class Post extends BaseEntity {
   @Column()
   creatorId: number;
 
+  @Field()
   @ManyToOne(() => User, (user) => user.posts)
   creator: User;
 
@@ -35,6 +38,9 @@ export class Post extends BaseEntity {
   @Field()
   @Column()
   title!: string;
+
+  @OneToMany(() => Like, (like) => like.post)
+  likes: Like[];
 
   @Field()
   @Column()

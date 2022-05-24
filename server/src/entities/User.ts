@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { Field, ObjectType } from "type-graphql";
 import { Post } from "./Post";
+import { Like } from "./Like";
 
 @ObjectType()
 @Entity()
@@ -35,6 +36,9 @@ export class User extends BaseEntity {
 
   @Column()
   password!: string;
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 
   @OneToMany(() => Post, (post) => post.creator)
   posts: Post[];

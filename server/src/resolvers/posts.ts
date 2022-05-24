@@ -1,4 +1,5 @@
 import { Post } from "../entities/Post";
+import { Like } from "../entities/Like";
 import {
   Resolver,
   Query,
@@ -8,9 +9,12 @@ import {
   Field,
   Ctx,
   UseMiddleware,
+  Int,
+  ObjectType,
 } from "type-graphql";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
+import { getConnection } from "typeorm";
 
 @InputType()
 class PostInput {
@@ -20,11 +24,92 @@ class PostInput {
   text: string;
 }
 
-@Resolver()
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+  @Field()
+  hasMore: boolean;
+}
+
+@Resolver(Post)
 export class PostResolver {
-  @Query(() => [Post])
-  posts(): Promise<Post[]> {
-    return Post.find();
+  @Mutation(() => Boolean)
+  async vote(
+    @Arg("value", () => Int) value: number,
+    @Arg("postId", () => Int) postId: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const isValue = value !== -1;
+    const realValue = isValue ? 1 : -1;
+    const { userId } = req.session;
+    // await Like.insert({
+    //   userId,
+    //   postId,
+    //   value: realValue,
+    // });
+    await getConnection().query(
+      `
+      START TRANSACTION;
+
+      insert into public.like ("userId", "postId", value)
+      values (${userId},${postId},${realValue});
+
+      update post
+      set points = points + ${realValue}
+      where id = ${postId};
+
+      COMMIT;
+    `
+    );
+    return true;
+  }
+
+  @Query(() => PaginatedPosts)
+  async posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+  ): Promise<PaginatedPosts> {
+    const realLimit = Math.min(50, limit);
+    const realLimitPlusOne = realLimit + 1;
+    const replacements: any[] = [realLimitPlusOne];
+
+    if (cursor) {
+      replacements.push(new Date(parseInt(cursor)));
+    }
+
+    const posts = await getConnection().query(
+      `
+    select p.*,
+    json_build_object(
+      'id', u.id,
+      'username', u.username,
+      'email', u.email,
+      'createdAt', u."createdAt",
+      'updatedAt', u."updatedAt" 
+    ) creator
+    from
+    post p inner join public.user u on u.id = p."creatorId"
+    ${cursor ? `where p."createdAt" < $2` : " "}
+    order by p."createdAt" DESC
+    limit $1
+    `,
+      replacements
+    );
+
+    // const qb = getConnection()
+    //   .getRepository(Post)
+    //   .createQueryBuilder("p")
+    //   .orderBy('"createdAt"', "DESC")
+    //   .take(realLimit);
+    // if (cursor) {
+    //   qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+    // }
+    // const posts = await qb.getMany();
+    return {
+      posts: posts.slice(0, realLimit),
+      hasMore: posts.length === realLimitPlusOne,
+    };
   }
   @Query(() => Post, { nullable: true })
   post(@Arg("id") id: number): Promise<Post | null> {
