@@ -19,6 +19,9 @@ export const LikeSection: React.FC<PostField> = ({ post }) => {
         className="border-2"
         onClick={async () => {
           setLiked(liked ? null : true);
+          if (post.voteStatus === 1) {
+            return;
+          }
           setLoadingState("like-lo");
           await vote({
             postId: post.id,
@@ -31,7 +34,9 @@ export const LikeSection: React.FC<PostField> = ({ post }) => {
           <Spinner className="h-5 w-5" />
         ) : (
           <ArrowUpIcon
-            className={`h-5 w-5 ${liked ? "text-blue-500" : "text-zinc-500"}`}
+            className={`h-5 w-5 ${
+              post.voteStatus === 1 ? "text-blue-500" : "text-zinc-500"
+            }`}
           />
         )}
       </button>
@@ -40,6 +45,9 @@ export const LikeSection: React.FC<PostField> = ({ post }) => {
         className="border-2"
         onClick={async () => {
           setLiked(liked === false ? null : false);
+          if (post.voteStatus === -1) {
+            return;
+          }
           setLoadingState("unlike-lo");
           await vote({
             postId: post.id,
@@ -54,7 +62,7 @@ export const LikeSection: React.FC<PostField> = ({ post }) => {
         ) : (
           <ArrowDownIcon
             className={`h-5 w-5 ${
-              liked === false ? "text-red-500" : "text-zinc-500"
+              post.voteStatus === -1 ? "text-red-500" : "text-zinc-500"
             }`}
           />
         )}
