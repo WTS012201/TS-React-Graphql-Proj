@@ -2,6 +2,7 @@ import Link from "next/link";
 import React from "react";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
+import Spinner from "./Spinner";
 
 interface NavBarProps {}
 

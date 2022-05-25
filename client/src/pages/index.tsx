@@ -8,6 +8,7 @@ import { isServer } from "../utils/isServer";
 import Link from "next/link";
 import Post from "../components/Post";
 import React from "react";
+import Spinner from "../components/Spinner";
 
 const Home: NextPage = () => {
   const [variables, setVariables] = React.useState({
@@ -35,7 +36,7 @@ const Home: NextPage = () => {
         <br />
 
         {!data && fetching ? (
-          <div>loading...</div>
+          <Spinner />
         ) : (
           data!.posts.posts.map((p) => {
             return <Post post={p} />;

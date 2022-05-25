@@ -14,6 +14,7 @@ import {
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { getConnection } from "typeorm";
+import { Like } from "../entities/Like";
 
 @InputType()
 class PostInput {
@@ -42,25 +43,50 @@ export class PostResolver {
     const isValue = value !== -1;
     const realValue = isValue ? 1 : -1;
     const { userId } = req.session;
-    // await Like.insert({
-    //   userId,
-    //   postId,
-    //   value: realValue,
-    // });
-    await getConnection().query(
-      `
-      START TRANSACTION;
+    const like = await Like.findOne({ where: { postId, userId } });
+    // the user has voted on the post before
+    // and they are changing their vote
+    if (like && like.value !== realValue) {
+      await getConnection().transaction(async (tm) => {
+        await tm.query(
+          `
+        update public.like
+        set value = $1
+        where "postId" = $2 and "userId" = $3
+        `,
+          [realValue, postId, userId]
+        );
 
-      insert into public.like ("userId", "postId", value)
-      values (${userId},${postId},${realValue});
+        await tm.query(
+          `
+          update post
+          set points = points + $1
+          where id = $2
+        `,
+          [2 * realValue, postId]
+        );
+      });
+    } else if (!like) {
+      // has never voted before
+      await getConnection().transaction(async (tm) => {
+        await tm.query(
+          `
+          insert into public.like ("userId", "postId", value)
+          values ($1, $2, $3)
+        `,
+          [userId, postId, realValue]
+        );
 
-      update post
-      set points = points + ${realValue}
-      where id = ${postId};
-
-      COMMIT;
-    `
-    );
+        await tm.query(
+          `
+          update post
+          set points = points + $1
+          where id = $2
+      `,
+          [realValue, postId]
+        );
+      });
+    }
     return true;
   }
 
