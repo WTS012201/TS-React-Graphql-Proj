@@ -5,7 +5,7 @@ import { createUrqlClient } from "../utils/createUrqlClient";
 import { NavBar } from "../components/NavBar";
 import { usePostsQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
-import Link from "next/link";
+import NextLink from "next/link";
 import Post from "../components/Post";
 import React from "react";
 import Spinner from "../components/Spinner";
@@ -27,14 +27,6 @@ const Home: NextPage = () => {
       </Head>
       <NavBar />
       <div className="m-auto w-1/2">
-        <div className="mt-4 flex">
-          <h1 className="text-5xl font-bold">Coolsite</h1>
-          <Link href="/create-post">
-            <a className="mr-2 ml-auto mt-auto">Create Post</a>
-          </Link>
-        </div>
-        <br />
-
         {!data && fetching ? (
           <Spinner />
         ) : (

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import NextLink from "next/link";
 import React from "react";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
@@ -19,18 +19,23 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
     //  logout will set me to null and go to else
     body = (
       <div>
-        <Link href="/login">
+        <NextLink href="/login">
           <a className="mr-2">Login</a>
-        </Link>
-        <Link href="/register">
+        </NextLink>
+        <NextLink href="/register">
           <a className="mr-2">Register</a>
-        </Link>
+        </NextLink>
       </div>
     );
   } else {
     body = (
-      <div className="flex">
-        <div className="mr-2 font-medium ">{data.me.username}</div>
+      <div className="flex h-max items-center">
+        <NextLink href="/create-post">
+          <a className="mr-2 border-2 bg-slate-50 rounded-lg p-1">
+            Create Post
+          </a>
+        </NextLink>
+        <div className="mr-2 font-medium">{data.me.username}</div>
         <button
           disabled={logoutFetching}
           onClick={() => {
@@ -46,21 +51,26 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   }
   return (
     <div className="bg-amber-100 p-1 flex sticky top-0 z-1">
-      <div className="ml-auto">
-        {body ? (
-          body
-        ) : (
-          // client renders this first so it must match with server
-          // server will always render this
-          <div>
-            <Link href="/login">
-              <a className="mr-2">Login</a>
-            </Link>
-            <Link href="/register">
-              <a className="mr-2">Register</a>
-            </Link>
-          </div>
-        )}
+      <div className="flex self-center m-auto flex-1 max-w-4xl">
+        <NextLink href="/">
+          <a className="text-5xl font-medium">Coolsite</a>
+        </NextLink>
+        <div className="ml-auto flex items-center">
+          {body ? (
+            body
+          ) : (
+            // client renders this first so it must match with server
+            // server will always render this
+            <div>
+              <NextLink href="/login">
+                <a className="mr-2">Login</a>
+              </NextLink>
+              <NextLink href="/register">
+                <a className="mr-2">Register</a>
+              </NextLink>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
