@@ -1,28 +1,20 @@
 import React from "react";
+import { PostSnippetFragment, useVoteMutation } from "../generated/graphql";
 import LikeSection from "./LikeSection";
 
 type PostField = {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  title: string;
-  text: string;
-  points: number;
-  creator: {
-    username: string;
-    id: number;
-  };
+  post: PostSnippetFragment;
 };
-const Post: React.FC<PostField> = (props) => {
+const Post: React.FC<PostField> = ({ post }) => {
   const [liked, setLiked] = React.useState<Boolean | null>(null);
 
   return (
-    <div key={props.id} className="p-2 shadow-md mt-2 border-2 flex">
-      <LikeSection points={props.points} />
+    <div key={post.id} className="p-2 shadow-md mt-2 border-2 flex">
+      <LikeSection post={post} />
       <div>
-        <h1 className=" font-medium text-lg">{props.title}</h1>
-        <div>posted by {props.creator.username}</div>
-        <p className="mt-1">{props.text}</p>
+        <h1 className=" font-medium text-lg">{post.title}</h1>
+        <div>posted by {post.creator.username}</div>
+        <p className="mt-1">{post.text}</p>
       </div>
     </div>
   );

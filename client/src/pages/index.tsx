@@ -38,7 +38,7 @@ const Home: NextPage = () => {
           <div>loading...</div>
         ) : (
           data!.posts.posts.map((p) => {
-            return <Post {...p} />;
+            return <Post post={p} />;
           })
         )}
         {data && data.posts.hasMore ? (
